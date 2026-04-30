@@ -1,0 +1,14 @@
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.out
+*.test
+*.prof
+.env
+vendor/
+.DS_Store
+Desktop.ini
+coverage.txt
+Thumbs.db
