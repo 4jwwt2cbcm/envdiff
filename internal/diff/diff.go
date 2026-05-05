@@ -1,55 +1,49 @@
 package diff
 
-// Mismatch represents a key that exists in both env files but has different values.
-type Mismatch struct {
-	Key    string
-	First  string
-	Second string
+// MismatchedKey holds a key whose value differs between two env files.
+type MismatchedKey struct {
+	Key         string
+	FirstValue  string
+	SecondValue string
 }
 
-// Result holds the full comparison outcome between two env files.
+// Result holds the full comparison outcome between two env maps.
 type Result struct {
-	// MissingInSecond contains keys present in the first file but absent in the second.
+	Matching        []string
+	MissingInFirst  []string
 	MissingInSecond []string
-	// MissingInFirst contains keys present in the second file but absent in the first.
-	MissingInFirst []string
-	// Mismatched contains keys present in both files but with differing values.
-	Mismatched []Mismatch
+	Mismatched      []MismatchedKey
 }
 
-// HasDifferences returns true if the Result contains any differences.
-func (r Result) HasDifferences() bool {
-	return len(r.MissingInFirst) > 0 ||
-		len(r.MissingInSecond) > 0 ||
-		len(r.Mismatched) > 0
-}
-
-// Compare compares two maps of env key/value pairs and returns a Result
-// describing the differences between them.
+// Compare compares two parsed env maps and returns a Result.
 func Compare(first, second map[string]string) Result {
 	var result Result
 
-	for k, v1 := range first {
-		if v2, ok := second[k]; !ok {
-			result.MissingInSecond = append(result.MissingInSecond, k)
-		} else if v1 != v2 {
-			result.Mismatched = append(result.Mismatched, Mismatch{
-				Key:    k,
-				First:  v1,
-				Second: v2,
+	for key, val1 := range first {
+		val2, exists := second[key]
+		if !exists {
+			result.MissingInSecond = append(result.MissingInSecond, key)
+		} else if val1 != val2 {
+			result.Mismatched = append(result.Mismatched, MismatchedKey{
+				Key:         key,
+				FirstValue:  val1,
+				SecondValue: val2,
 			})
+		} else {
+			result.Matching = append(result.Matching, key)
 		}
 	}
 
-	for k := range second {
-		if _, ok := first[k]; !ok {
-			result.MissingInFirst = append(result.MissingInFirst, k)
+	for key := range second {
+		if _, exists := first[key]; !exists {
+			result.MissingInFirst = append(result.MissingInFirst, key)
 		}
 	}
 
-	sortStrings(result.MissingInSecond)
-	sortStrings(result.MissingInFirst)
-	sortMismatched(result.Mismatched)
+	result.Matching = sortStrings(result.Matching)
+	result.MissingInFirst = sortStrings(result.MissingInFirst)
+	result.MissingInSecond = sortStrings(result.MissingInSecond)
+	result.Mismatched = sortMismatched(result.Mismatched)
 
 	return result
 }
