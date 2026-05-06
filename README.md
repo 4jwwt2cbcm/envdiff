@@ -45,11 +45,12 @@ Mismatched keys:
 
 ### Flags
 
-| Flag | Description |
-|------|-------------|
-| `--strict` | Exit with non-zero status if any differences are found |
-| `--values` | Include value comparison in output |
-| `--json` | Output results as JSON |
+| Flag | Default | Description |
+|------|---------|-------------|
+| `--strict` | `false` | Exit with non-zero status if any differences are found |
+| `--values` | `false` | Include value comparison in output |
+| `--json` | `false` | Output results as JSON |
+| `--ignore` | | Comma-separated list of keys to ignore during comparison |
 
 ## Why envdiff?
 
