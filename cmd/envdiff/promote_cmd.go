@@ -12,6 +12,12 @@ import (
 
 // runPromote handles the `promote` subcommand.
 // Usage: envdiff promote [--overwrite] [--keys KEY1,KEY2] <src.env> <dst.env> [output.env]
+//
+// It reads key-value pairs from src.env and merges them into dst.env.
+// By default, only keys missing from dst.env are added. Use --overwrite to
+// replace existing keys. Use --keys to restrict promotion to specific keys.
+// If output.env is provided, the merged result is written there; otherwise
+// only the promotion summary is printed to stdout.
 func runPromote(args []string) {
 	fs := flag.NewFlagSet("promote", flag.ExitOnError)
 	overwrite := fs.Bool("overwrite", false, "overwrite existing keys in destination")
