@@ -18,6 +18,19 @@ func (r RenameMap) Inverse() RenameMap {
 	return inv
 }
 
+// Validate checks the RenameMap for duplicate target keys, which would cause
+// ambiguous renames. It returns an error listing the first duplicate found.
+func (r RenameMap) Validate() error {
+	seen := make(map[string]string, len(r))
+	for oldKey, newKey := range r {
+		if prev, ok := seen[newKey]; ok {
+			return fmt.Errorf("rename: duplicate target key %q (mapped from both %q and %q)", newKey, prev, oldKey)
+		}
+		seen[newKey] = oldKey
+	}
+	return nil
+}
+
 // ApplyRenames rewrites the keys in an env map according to the rename map.
 // Keys not present in the rename map are left unchanged.
 func ApplyRenames(env map[string]string, renames RenameMap) map[string]string {
@@ -42,6 +55,9 @@ func LoadRenameFile(path string) (RenameMap, error) {
 	var rm RenameMap
 	if err := json.Unmarshal(data, &rm); err != nil {
 		return nil, fmt.Errorf("rename: parse file %q: %w", path, err)
+	}
+	if err := rm.Validate(); err != nil {
+		return nil, err
 	}
 	return rm, nil
 }
